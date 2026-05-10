@@ -1,0 +1,24 @@
+version: 2
+
+models:
+  - name: fct_vwap_windows
+    description: "Enriched VWAP fact table with session high and drawdown"
+    columns:
+      - name: symbol
+        tests: [not_null]
+      - name: vwap
+        tests: [not_null]
+      - name: session_high
+        tests: [not_null]
+
+  - name: mart_portfolio_summary
+    description: "Per-symbol session rollup with volatility regime"
+    columns:
+      - name: symbol
+        tests: [not_null, unique]
+
+  - name: mart_volatility_alerts
+    description: "Active alerts — drawdown and high volatility flags"
+    columns:
+      - name: symbol
+        tests: [not_null]

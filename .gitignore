@@ -1,0 +1,52 @@
+# ── Secrets ───────────────────────────────────────────────────────────────────
+.env
+*.key
+*.pem
+
+# ── Python ────────────────────────────────────────────────────────────────────
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.Python
+
+# ── Data — never commit raw data or DuckDB files ──────────────────────────────
+data/
+*.duckdb
+*.parquet
+*.arrow
+
+# ── Faust internal state ──────────────────────────────────────────────────────
+riskpulse-vwap-data/
+
+# ── dbt ───────────────────────────────────────────────────────────────────────
+riskpulse_dbt/target/
+riskpulse_dbt/dbt_packages/
+riskpulse_dbt/logs/
+
+# ── Flink JARs — too large for GitHub (make jars downloads them) ──────────────
+jars/
+
+# ── ChromaDB local store ───────────────────────────────────────────────────────
+data/chromadb/
+
+# ── macOS ─────────────────────────────────────────────────────────────────────
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# ── IDEs ──────────────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ── Logs ──────────────────────────────────────────────────────────────────────
+*.log
+logs/
+
+# ── Jupyter ───────────────────────────────────────────────────────────────────
+.ipynb_checkpoints/
+*.ipynb

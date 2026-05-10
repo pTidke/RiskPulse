@@ -1,0 +1,160 @@
+version: '3.8'
+
+# RiskPulse — 100% free local stack
+# Kafka · MinIO (local S3) · ChromaDB · Grafana · Kafka UI
+# Run: make up
+
+services:
+
+  # ── Kafka infrastructure ──────────────────────────────────
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.6.0
+    container_name: riskpulse-zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "2181"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  kafka:
+    image: confluentinc/cp-kafka:7.6.0
+    container_name: riskpulse-kafka
+    depends_on:
+      zookeeper:
+        condition: service_healthy
+    ports:
+      - "9092:9092"       # host access (producers run on host)
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      # Two listeners: EXTERNAL for host clients, INTERNAL for Docker services
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: EXTERNAL:PLAINTEXT,INTERNAL:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: EXTERNAL://localhost:9092,INTERNAL://kafka:29092
+      KAFKA_LISTENERS: EXTERNAL://0.0.0.0:9092,INTERNAL://0.0.0.0:29092
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: false
+      KAFKA_LOG_RETENTION_HOURS: 24
+      KAFKA_MESSAGE_MAX_BYTES: 1048576
+    healthcheck:
+      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9092"]
+      interval: 15s
+      timeout: 10s
+      retries: 8
+
+  schema-registry:
+    image: confluentinc/cp-schema-registry:7.6.0
+    container_name: riskpulse-schema-registry
+    depends_on:
+      kafka:
+        condition: service_healthy
+    ports:
+      - "8081:8081"
+    environment:
+      SCHEMA_REGISTRY_HOST_NAME: schema-registry
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: INTERNAL://kafka:29092
+      SCHEMA_REGISTRY_KAFKASTORE_SECURITY_PROTOCOL: PLAINTEXT
+
+  # Creates the 3 core topics on startup
+  kafka-init:
+    image: confluentinc/cp-kafka:7.6.0
+    container_name: riskpulse-kafka-init
+    depends_on:
+      kafka:
+        condition: service_healthy
+    entrypoint: ["/bin/bash", "-c"]
+    command: |
+      "
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists \
+        --topic market-ticks --replication-factor 1 --partitions 3 \
+        --config retention.ms=86400000
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists \
+        --topic portfolio-events --replication-factor 1 --partitions 3 \
+        --config retention.ms=86400000
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists \
+        --topic risk-alerts --replication-factor 1 --partitions 3 \
+        --config retention.ms=86400000
+      echo '✅ Topics: market-ticks, portfolio-events, risk-alerts'
+      "
+
+  # Kafka UI — browser at http://localhost:8080
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: riskpulse-kafka-ui
+    depends_on:
+      kafka:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: riskpulse-local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
+      KAFKA_CLUSTERS_0_SCHEMAREGISTRY: http://schema-registry:8081
+
+  # ── MinIO — local S3 replacement ─────────────────────────
+  minio:
+    image: minio/minio:latest
+    container_name: riskpulse-minio
+    ports:
+      - "9000:9000"   # S3 API
+      - "9001:9001"   # Web console → http://localhost:9001
+    environment:
+      MINIO_ROOT_USER: ${MINIO_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_PASSWORD:-minioadmin}
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  # Creates S3 buckets on startup
+  minio-init:
+    image: minio/mc:latest
+    container_name: riskpulse-minio-init
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: ["/bin/sh", "-c"]
+    command: |
+      "
+      mc alias set local http://minio:9000 minioadmin minioadmin
+      mc mb --ignore-existing local/riskpulse-delta
+      mc mb --ignore-existing local/riskpulse-checkpoints
+      mc mb --ignore-existing local/riskpulse-archive
+      echo '✅ MinIO buckets ready'
+      "
+
+  # ── ChromaDB — vector store for RAG layer ────────────────
+  chromadb:
+    image: chromadb/chroma:latest
+    container_name: riskpulse-chromadb
+    ports:
+      - "8000:8000"
+    volumes:
+      - chroma_data:/chroma/chroma
+    environment:
+      CHROMA_SERVER_AUTHN_PROVIDER: ""
+
+  # ── Grafana — dashboards (connects to DuckDB via plugin) ─
+  grafana:
+    image: grafana/grafana:11.0.0
+    container_name: riskpulse-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-riskpulse}
+      GF_INSTALL_PLUGINS: frser-sqlite-datasource
+    volumes:
+      - grafana_data:/var/lib/grafana
+
+volumes:
+  minio_data:
+  chroma_data:
+  grafana_data:
