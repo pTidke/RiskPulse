@@ -1,0 +1,75 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name            = "riskpulse"
+version         = "1.0.0"
+description     = "Real-time portfolio risk intelligence — Kafka · Faust · dbt · DuckDB · RAG"
+readme          = "README.md"
+license         = { text = "MIT" }
+requires-python = ">=3.9,<3.10"
+authors         = [{ name = "Prajwal Tidke", email = "ms.ptidke@gmail.com" }]
+keywords        = ["kafka", "faust", "dbt", "duckdb", "fintech", "streaming", "rag", "langchain"]
+classifiers     = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.9",
+    "Topic :: Office/Business :: Financial",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
+dependencies = [
+    "confluent-kafka==2.3.0",
+    "fastavro==1.12.2",
+    "alpaca-py==0.21.1",
+    "faust-streaming==0.11.3",
+    "duckdb==0.10.3",
+    "deltalake==0.17.4",
+    "pyarrow==15.0.2",
+    "pandas==2.2.1",
+    "boto3==1.34.0",
+    "langchain-openai",
+    "langchain-community",
+    "chromadb==0.5.0",
+    "dbt-core==1.8.0",
+    "dbt-duckdb==1.8.0",
+    "python-dotenv==1.0.1",
+    "loguru==0.7.2",
+    "requests==2.31.0",
+    "fastapi==0.111.0",
+    "uvicorn==0.30.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4",
+    "pytest-asyncio>=0.23",
+    "ruff>=0.4",
+    "pre-commit>=3.7",
+]
+
+[project.urls]
+Homepage   = "https://github.com/pTidke/riskpulse"
+Repository = "https://github.com/pTidke/riskpulse"
+Portfolio  = "https://prajwaltidke.me"
+
+[project.scripts]
+riskpulse-simulate = "producers.portfolio_simulator:main"
+riskpulse-ingest   = "rag.rag_engine:ingest"
+
+# ── Ruff (linter) ─────────────────────────────────────────────────────────────
+[tool.ruff]
+target-version = "py39"
+line-length    = 100
+exclude        = ["riskpulse_dbt/", ".venv/", "jars/"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W", "UP"]
+ignore = ["E501"]
+
+# ── Pytest ────────────────────────────────────────────────────────────────────
+[tool.pytest.ini_options]
+testpaths    = ["tests"]
+python_files = ["test_*.py"]
