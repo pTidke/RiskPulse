@@ -1,0 +1,109 @@
+.wrap {
+  display: flex;
+  align-items: stretch;
+  background: linear-gradient(180deg, var(--bg2) 0%, var(--bg) 100%);
+  border-bottom: 1px solid var(--border);
+  height: 32px;
+  overflow: hidden;
+  position: relative;
+}
+
+.label {
+  flex-shrink: 0;
+  background: var(--amber);
+  color: var(--bg);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  padding: 0 14px;
+  display: flex;
+  align-items: center;
+  position: relative;
+  z-index: 3;
+}
+
+.label::after {
+  content: '';
+  position: absolute;
+  right: -8px;
+  top: 0;
+  bottom: 0;
+  width: 0;
+  height: 0;
+  border-top:    16px solid transparent;
+  border-bottom: 16px solid transparent;
+  border-left:    8px solid var(--amber);
+}
+
+.track {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+  padding-left: 18px;
+  display: flex;
+  align-items: center;
+}
+
+.track::before, .track::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 50px;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.track::before { left: 0;  background: linear-gradient(90deg, var(--bg) 0%, transparent 100%); }
+.track::after  { right: 0; background: linear-gradient(270deg, var(--bg) 0%, transparent 100%); }
+
+/* THE ACTUAL ANIMATION — using keyframes with explicit translateX */
+.scroll {
+  display: flex;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+  animation: tickerScroll 70s linear infinite;
+  will-change: transform;
+}
+
+@keyframes tickerScroll {
+  0%   { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(-33.33%, 0, 0); }
+}
+
+.item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  margin-right: 18px;
+  flex-shrink: 0;
+}
+
+.sym   { color: var(--amber); font-weight: 600; }
+.price { color: var(--white); }
+.up    { color: var(--green); }
+.down  { color: var(--red); }
+
+.regime {
+  font-size: 8px;
+  color: var(--dim);
+  background: var(--bg3);
+  padding: 1px 6px;
+  letter-spacing: 1px;
+  border: 1px solid var(--border);
+}
+
+.divider {
+  width: 4px;
+  height: 4px;
+  background: var(--dim2);
+  border-radius: 50%;
+}
+
+/* Pause on hover */
+.wrap:hover .scroll {
+  animation-play-state: paused;
+}

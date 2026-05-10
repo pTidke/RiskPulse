@@ -1,0 +1,90 @@
+.bar {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  padding: 14px 24px 0;
+}
+
+.card {
+  background: linear-gradient(180deg, var(--bg2) 0%, var(--bg3) 100%);
+  border: 1px solid var(--border);
+  padding: 14px 18px;
+  position: relative;
+  overflow: hidden;
+  animation: fadeIn 0.5s ease both;
+  transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+}
+
+.card:hover {
+  transform: translateY(-1px);
+  border-color: var(--border2);
+  box-shadow: var(--shadow-md);
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 2px;
+  height: 100%;
+}
+
+.amber::before { background: var(--amber); box-shadow: 0 0 8px var(--amber); }
+.red::before   { background: var(--red);   box-shadow: 0 0 8px var(--red); }
+.green::before { background: var(--green); box-shadow: 0 0 8px var(--green); }
+.blue::before  { background: var(--blue);  box-shadow: 0 0 8px var(--blue); }
+
+.card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, transparent 50%, rgba(255,255,255,0.015) 100%);
+  pointer-events: none;
+}
+
+.labelRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--dim);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.dot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  animation: blink 2s ease-in-out infinite;
+}
+
+.dot.amber { background: var(--amber); box-shadow: 0 0 4px var(--amber); }
+.dot.red   { background: var(--red);   box-shadow: 0 0 4px var(--red); }
+.dot.green { background: var(--green); box-shadow: 0 0 4px var(--green); }
+.dot.blue  { background: var(--blue);  box-shadow: 0 0 4px var(--blue); }
+
+.value {
+  font-family: var(--font-mono);
+  font-size: 28px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.5px;
+}
+
+.amberText { color: var(--amber); }
+.redText   { color: var(--red); }
+.greenText { color: var(--green); }
+.blueText  { color: var(--blue); }
+
+.sub {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--dim);
+  margin-top: 6px;
+  letter-spacing: 0.5px;
+}

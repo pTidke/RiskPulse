@@ -1,0 +1,272 @@
+.panel {
+  background: linear-gradient(180deg, var(--bg2) 0%, var(--bg3) 100%);
+  border: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  animation: fadeIn 0.5s ease both;
+  /* FIXED HEIGHT — no more growing */
+  height: 480px;
+  max-height: 480px;
+  min-height: 480px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 11px 16px;
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(90deg, var(--bg3) 0%, transparent 100%);
+  flex-shrink: 0;
+}
+
+.title {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--amber);
+  letter-spacing: 2px;
+}
+
+.badge {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--gray);
+  background: var(--bg);
+  padding: 3px 8px;
+  border: 1px solid var(--border);
+  letter-spacing: 0.5px;
+}
+
+.badgeDot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 4px var(--green);
+  animation: blink 1.5s ease-in-out infinite;
+}
+
+.suggestions {
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.suggestionsLabel {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  color: var(--dim);
+  letter-spacing: 2px;
+  margin-bottom: 4px;
+}
+
+.suggestion {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--gray);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  padding: 9px 12px;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s;
+  animation: fadeInRight 0.4s ease both;
+}
+
+.suggestion:hover {
+  border-color: var(--amber);
+  color: var(--amber);
+  background: var(--amber-dim);
+  transform: translateX(2px);
+}
+
+.arrow {
+  color: var(--amber);
+  font-weight: 600;
+  font-size: 13px;
+}
+
+/* SCROLLABLE HISTORY — internal scroll */
+.history {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.exchange {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  animation: fadeIn 0.3s ease;
+}
+
+.qRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.prompt {
+  color: var(--amber);
+  flex-shrink: 0;
+  font-weight: 600;
+}
+
+.qText {
+  flex: 1;
+  color: var(--gray);
+}
+
+.qTime {
+  font-size: 9px;
+  color: var(--dim);
+  flex-shrink: 0;
+}
+
+.answer {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  background: linear-gradient(180deg, var(--bg3) 0%, var(--bg2) 100%);
+  border-left: 2px solid var(--amber);
+  padding: 10px 12px;
+  position: relative;
+  animation: fadeIn 0.3s ease;
+}
+
+.answer::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, var(--amber) 0%, transparent 100%);
+}
+
+.answerLabel {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  color: var(--amber);
+  letter-spacing: 2px;
+  font-weight: 600;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.answerText {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  color: var(--white);
+  line-height: 1.65;
+  white-space: pre-wrap;
+}
+
+.cursor {
+  display: inline-block;
+  margin-left: 1px;
+  color: var(--amber);
+  animation: blink 0.8s steps(2) infinite;
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 12px;
+  background: var(--bg3);
+  border-left: 2px solid var(--border2);
+}
+
+.loading > span:not(.loadingText) {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--amber);
+  animation: blink 1s ease-in-out infinite;
+}
+
+.loading > span:nth-child(2) { animation-delay: 0.15s; }
+.loading > span:nth-child(3) { animation-delay: 0.30s; }
+
+.loadingText {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--dim);
+  letter-spacing: 2px;
+  margin-left: 8px;
+  width: auto !important;
+  height: auto !important;
+  background: none !important;
+  animation: none !important;
+}
+
+.inputRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-top: 1px solid var(--border);
+  background: var(--bg);
+  flex-shrink: 0;
+}
+
+.inputPrompt {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--amber);
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--white);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  outline: none;
+  padding: 4px 0;
+}
+
+.input::placeholder { color: var(--dim); }
+.input:disabled { opacity: 0.5; }
+
+.btn {
+  background: var(--amber);
+  color: var(--bg);
+  border: none;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  padding: 7px 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.btn:hover:not(:disabled) {
+  background: var(--white);
+  box-shadow: 0 0 12px var(--amber-glow);
+}
+
+.btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}

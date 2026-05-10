@@ -1,0 +1,91 @@
+.app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(90deg, rgba(255,61,90,0.15) 0%, rgba(255,61,90,0.05) 100%);
+  border-bottom: 1px solid rgba(255,61,90,0.3);
+  color: var(--red);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  padding: 8px 24px;
+  animation: fadeIn 0.3s ease;
+}
+
+.errorIcon {
+  font-size: 14px;
+  animation: blink 1.5s ease-in-out infinite;
+}
+
+.error code {
+  background: rgba(255,61,90,0.2);
+  padding: 2px 8px;
+  margin-left: 6px;
+  font-size: 10px;
+  letter-spacing: 0.5px;
+}
+
+.main {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 14px;
+  padding: 14px 24px;
+  flex: 1;
+  align-items: stretch;
+}
+
+.left  {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.right {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  /* The RAGQueryBox flex-grows to fill remaining space */
+}
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 24px;
+  border-top: 1px solid var(--border);
+  background: var(--bg2);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--dim);
+  letter-spacing: 1px;
+  margin-top: auto;
+}
+
+.footerLeft, .footerRight {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.footerLogo {
+  color: var(--amber);
+  font-weight: 600;
+  letter-spacing: 2px;
+}
+
+.footerDot {
+  color: var(--dim2);
+}
+
+.footer a {
+  color: var(--gray);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.footer a:hover { color: var(--amber); }
