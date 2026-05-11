@@ -47,6 +47,9 @@ jobs:
       - name: Generate seed data
         run: python scripts/generate_test_data.py
 
+      - name: Create data directory
+        run: mkdir -p data/risk_metrics
+
       - name: Set up dbt profile
         run: |
           mkdir -p ~/.dbt
@@ -55,7 +58,7 @@ jobs:
             outputs:
               dev:
                 type: duckdb
-                path: ./data/riskpulse.duckdb
+                path: ${{ github.workspace }}/data/riskpulse.duckdb
                 threads: 2
                 extensions:
                   - parquet
