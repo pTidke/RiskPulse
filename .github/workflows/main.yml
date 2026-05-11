@@ -1,0 +1,79 @@
+name: RiskPulse CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  python:
+    name: Python Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.9"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip setuptools wheel
+          pip install pytest duckdb pyarrow pandas \
+                      python-dotenv loguru confluent-kafka \
+                      faust-streaming deltalake
+
+      - name: Run unit tests
+        run: pytest tests/ -v --tb=short
+
+  dbt:
+    name: dbt Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.9"
+          cache: pip
+
+      - name: Install dbt
+        run: pip install dbt-core dbt-duckdb duckdb pyarrow pandas
+
+      - name: Generate seed data
+        run: python scripts/generate_test_data.py
+
+      - name: Set up dbt profile
+        run: |
+          mkdir -p ~/.dbt
+          cat > ~/.dbt/profiles.yml << 'EOF'
+          riskpulse_dbt:
+            outputs:
+              dev:
+                type: duckdb
+                path: ./data/riskpulse.duckdb
+                threads: 2
+                extensions:
+                  - parquet
+            target: dev
+          EOF
+
+      - name: dbt run
+        working-directory: riskpulse_dbt
+        run: dbt run
+
+      - name: dbt test
+        working-directory: riskpulse_dbt
+        run: dbt test
+
+  docker:
+    name: Docker Validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate docker-compose
+        run: docker compose config --quiet
