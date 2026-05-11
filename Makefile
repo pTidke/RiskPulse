@@ -44,13 +44,13 @@ query:
 
 # ── dbt ───────────────────────────────────────────────────────────────────────
 dbt-run:
-	cd dbt && dbt run
+	cd riskpulse_dbt && dbt run
 
 dbt-test:
-	cd dbt && dbt test
+	cd riskpulse_dbt && dbt test
 
 dbt-docs:
-	cd dbt && dbt docs generate && dbt docs serve
+	cd riskpulse_dbt && dbt docs generate && dbt docs serve
 
 # ── Cleanup ───────────────────────────────────────────────────────────────────
 clean:

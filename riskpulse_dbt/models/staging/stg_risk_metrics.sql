@@ -1,5 +1,5 @@
 with source as (
-    select * from read_parquet('./data/risk_metrics/**/*.parquet')
+    select * from read_parquet('../data/risk_metrics/**/*.parquet')
 ),
 
 cleaned as (
