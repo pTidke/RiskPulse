@@ -14,9 +14,9 @@
 
 ## What Is This?
 
-RiskPulse is a **senior data engineering portfolio project** that mirrors the kind of real-time risk infrastructure I architected at TresVista for a $550B AUM client — but rebuilt with a modern open-source stack and an AI layer on top.
+RiskPulse is designed to mirror enterprise-grade, real-time risk infrastructure used by large-scale asset management firms—rebuilt with a modern open-source stack and an AI layer on top.
 
-At TresVista, our ETL pipelines were batch-based: portfolio managers waited hours for risk reports. RiskPulse answers the question: _what would that system look like if it ran in real time, cost nothing to operate, and let you ask questions in plain English?_
+In traditional financial data infrastructures, legacy ETL pipelines are heavily batch-based, forcing portfolio managers to wait hours for critical risk reports. RiskPulse answers the question: *what would that system look like if it ran in real time, cost virtually nothing to operate, and let you ask questions in plain English?*
 
 **Key capabilities:**
 
@@ -25,6 +25,10 @@ At TresVista, our ETL pipelines were batch-based: portfolio managers waited hour
 - **dbt** builds clean analytics marts with 10 schema tests and full lineage documentation
 - A **LangChain RAG layer** (ChromaDB + Azure GPT-4o-mini) answers natural language questions against live mart data
 - Entire stack runs **100% locally for free** — no cloud account required
+
+---
+
+https://github.com/user-attachments/assets/24e8fbce-6639-435c-98a8-aec7495dce21
 
 ---
 
