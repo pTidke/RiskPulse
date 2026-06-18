@@ -305,15 +305,3 @@ riskpulse/
 | Alpaca API (live market data)                | **$0** (free paper trading tier) |
 | Azure GPT-4o-mini (RAG queries)              | **~$0.002 per query**            |
 | Full project operating cost                  | **~$0–2/month**                  |
-
----
-
-## Background
-
-Built by **Prajwal Tidke** — Senior Data Engineer with 5+ years building production ETL systems at LTIMindtree and TresVista (serving a $550B+ AUM fund-of-funds client). Currently completing MS Big Data Analytics at SDSU (4.0 GPA) and researching LLM applications at LINC Lab.
-
-This project bridges my batch ETL background with modern streaming + AI — the stack I would have built at TresVista if we'd had a real-time layer.
-
-- 🔗 [LinkedIn](https://linkedin.com/in/ptidke9)
-- 🌐 [Portfolio](https://prajwaltidke.me)
-- 💻 [GitHub](https://github.com/pTidke)
