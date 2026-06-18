@@ -3,7 +3,7 @@
 > **Real-time portfolio risk intelligence** — streaming market data through Kafka and Faust, transformed by dbt, and queryable in plain English via a LangChain RAG layer backed by Azure OpenAI.
 
 [![Python](https://img.shields.io/badge/Python-3.9-blue?logo=python)](https://python.org)
-[![Kafka](https://img.shields.io/badge/Apache_Kafka-2.8-black?logo=apachekafka)](https://kafka.apache.org)
+[![Kafka](https://img.shields.io/badge/Apache_Kafka-3.6-black?logo=apachekafka)](https://kafka.apache.org)
 [![Faust](https://img.shields.io/badge/Faust_Streaming-0.11-orange)](https://faust-streaming.github.io/faust)
 [![dbt](https://img.shields.io/badge/dbt-1.8-red?logo=dbt)](https://getdbt.com)
 [![DuckDB](https://img.shields.io/badge/DuckDB-0.10-yellow)](https://duckdb.org)
@@ -113,6 +113,7 @@ Recommend monitoring NVDA given its HIGH volatility regime designation.
 | LLM               | Azure OpenAI GPT-4o-mini | Natural language portfolio queries      |
 | Orchestration     | LangChain                | RAG pipeline + prompt engineering       |
 | API               | FastAPI                  | REST endpoints for RAG + portfolio data |
+| Dashboard         | Vite                     | Live risk visualizations (frontend)     |
 | DevOps            | Docker Compose           | Full local stack in one command         |
 | CI/CD             | GitHub Actions           | dbt test gate on every PR               |
 | Data Source       | Alpaca Markets API       | Free real-time equity tick data         |
@@ -156,41 +157,98 @@ Drawdown alert fires when `drawdown_pct > 3%` → emits to `risk-alerts` Kafka t
 
 ## Quick Start
 
+### Prerequisites
+- Docker and Docker Compose
+- Python 3.9 (required)
+- Node.js 18+ (for the dashboard, step 10)
+- An Azure OpenAI deployment, needed only for the RAG layer (steps 8 and 9)
+
+### 1. Clone and configure
 ```bash
-# 1. Clone and configure
-git clone https://github.com/pTidke/riskpulse.git
-cd riskpulse
-cp .env.example .env          # no API keys needed for simulator mode
+git clone https://github.com/pTidke/RiskPulse.git
+cd RiskPulse
+cp .env.example .env
+```
+Streaming, dbt, and the dashboard need **no API keys**. The RAG layer does. Before step 8, set your Azure OpenAI values in `.env`: endpoint, API key, deployment name, and API version.
 
-# 2. Start all Docker services
+### 2. Start the infrastructure
+```bash
 make up
+```
+Kafka, MinIO, ChromaDB, and Grafana start, and the three topics (`market-ticks`, `portfolio-events`, `risk-alerts`) are created automatically. Confirm if you want:
+```bash
+docker exec riskpulse-kafka kafka-topics --bootstrap-server localhost:9092 --list
+```
 
-# 3. Install Python dependencies (Python 3.9 required)
+### 3. Python environment
+```bash
 python3.9 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
+```
+> Run `source .venv/bin/activate` in every new terminal below before using `dbt` or `python`.
 
-# 4. Start simulated data flow (Terminal 1)
+### 4. Start the data flow (Terminal 1)
+```bash
 make simulate
+```
 
-# 5. Start Faust stream processor (Terminal 2)
+### 5. Start the Faust stream processor (Terminal 2)
+```bash
 python stream_jobs/vwap_job.py worker -l info --without-web
+```
+Leave it running. **Wait about 5 minutes** so the first 5-minute window closes before you run dbt, otherwise the marts read empty. A few `GroupCoordinatorNotAvailable` lines at startup are normal and clear on their own.
 
-# 6. Run dbt models (after ~5 min for first window)
-cd riskpulse_dbt && dbt run && dbt test
+### 6. Build the dbt models (Terminal 3)
+```bash
+cd riskpulse_dbt
+dbt run && dbt test
+```
+The DuckDB profile ships in `riskpulse_dbt/profiles.yml` (local only, no secrets). If dbt reports a missing or empty profile, create `~/.dbt/profiles.yml`:
+```yaml
+# the top key must match the `profile:` line in dbt_project.yml
+riskpulse:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: 'riskpulse.duckdb'
+      threads: 4
+```
 
-# 7. Ingest into RAG layer
+### 7. (Optional) View the dbt lineage docs (Terminal 3)
+```bash
+dbt docs generate && dbt docs serve --port 8090
+```
+Port 8090 is used because Kafka UI already holds 8080. Open http://localhost:8090, and stop it with Ctrl+C.
+
+### 8. Ingest the marts into the RAG layer
+```bash
 cd .. && python rag/rag_engine.py ingest
+```
+Requires the Azure OpenAI values from step 1.
 
-# 8. Ask questions
+### 9. Ask questions
+```bash
 python rag/rag_engine.py query "which stocks are the riskiest right now?"
 ```
 
+### 10. (Optional) Start the dashboard (Terminal 4)
+```bash
+# If the dashboard reads live data from the FastAPI backend, start it first
+# in its own terminal. ChromaDB holds port 8000, so run the API elsewhere:
+#   uvicorn rag.api:app --port 8001
+cd frontend && npm install && npm run dev
+```
+Use a plain `npm install`, **not** `--force`, to avoid a Rollup native-dependency bug. Dashboard at http://localhost:5173.
+
 **Open in browser:**
-| Service | URL | Credentials |
-|---|---|---|
-| Kafka UI | http://localhost:8080 | — |
-| MinIO | http://localhost:9001 | minioadmin / minioadmin |
-| Grafana | http://localhost:3000 | admin / riskpulse |
+| Service   | URL                    | Credentials             |
+| --------- | ---------------------- | ----------------------- |
+| Dashboard | http://localhost:5173  | —                       |
+| Kafka UI  | http://localhost:8080  | —                       |
+| MinIO     | http://localhost:9001  | minioadmin / minioadmin |
+| Grafana   | http://localhost:3000  | admin / riskpulse       |
+| dbt docs  | http://localhost:8090  | — (when running)        |
 
 ---
 
@@ -199,13 +257,15 @@ python rag/rag_engine.py query "which stocks are the riskiest right now?"
 ```
 riskpulse/
 ├── producers/
-│   ├── alpaca_producer.py       # Live Alpaca WebSocket → Kafka
+│   ├── alpaca_producer.py      # Live Alpaca WebSocket → Kafka
 │   └── portfolio_simulator.py  # GBM synthetic data → Kafka
 ├── stream_jobs/
 │   └── vwap_job.py             # Faust VWAP + risk metrics job
 ├── storage/
 │   └── duckdb_query.py         # DuckDB queries against Parquet
 ├── riskpulse_dbt/
+│   ├── dbt_project.yml
+│   ├── profiles.yml            # Local DuckDB profile
 │   └── models/
 │       ├── staging/
 │       │   └── stg_risk_metrics.sql
@@ -214,12 +274,26 @@ riskpulse/
 │           ├── mart_portfolio_summary.sql
 │           └── mart_volatility_alerts.sql
 ├── rag/
-│   ├── rag_engine.py           # LangChain + ChromaDB + Azure OpenAI
+│   ├── rag_engine.py           # LangChain + ChromaDB + Azure OpenAI (CLI)
 │   └── api.py                  # FastAPI REST endpoints
+├── frontend/                   # Vite dashboard (risk visualizations)
+├── tests/                      # Pipeline tests
+├── .github/workflows/          # CI: dbt test gate on every PR
 ├── docker-compose.yml          # Full local stack
 ├── Makefile                    # One-command operations
 └── .env.example                # Config template
 ```
+
+---
+
+## Troubleshooting
+
+- **`make up` fails, kafka exits (1)** — usually a stale container or port 9092 in use. Run `docker compose down --remove-orphans`, check `lsof -i :9092`, then `make up`. Read the real cause with `docker logs riskpulse-kafka --tail 40`.
+- **Producer: `Unknown topic`** — topics were not created yet. Check `docker logs riskpulse-kafka-init`, or create them by hand with `kafka-topics --create`.
+- **dbt: profile not found or empty** — the profile must exist and have content. See step 6.
+- **dbt docs: `Address already in use`** — Kafka UI holds 8080. Use `dbt docs serve --port 8090`.
+- **RAG: `unexpected keyword argument 'proxies'`** — a version clash between `openai` and `langchain-openai`. Fix with `pip install -U langchain-openai langchain-core`, or pin `openai<1.55`.
+- **Dashboard: `Cannot find module @rollup/rollup-darwin-arm64`** — npm optional-dependency bug. From `frontend/`, run `rm -rf node_modules package-lock.json && npm install` (no `--force`).
 
 ---
 
