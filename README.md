@@ -61,8 +61,8 @@ Recommend monitoring NVDA given its HIGH volatility regime designation.
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                      DATA SOURCES                           │
-│  Alpaca WebSocket    Coinbase API    Portfolio Simulator     │
-│  (live equity ticks) (crypto feed)  (GBM synthetic data)   │
+│     Alpaca WebSocket            Portfolio Simulator          │
+│     (live equity ticks)        (GBM synthetic data)         │
 └──────────────────────────┬──────────────────────────────────┘
                            │
                            ▼
@@ -173,7 +173,7 @@ pip install -r requirements.txt
 make simulate
 
 # 5. Start Faust stream processor (Terminal 2)
-python flink_jobs/vwap_job.py worker -l info --without-web
+python stream_jobs/vwap_job.py worker -l info --without-web
 
 # 6. Run dbt models (after ~5 min for first window)
 cd riskpulse_dbt && dbt run && dbt test
@@ -201,7 +201,7 @@ riskpulse/
 ├── producers/
 │   ├── alpaca_producer.py       # Live Alpaca WebSocket → Kafka
 │   └── portfolio_simulator.py  # GBM synthetic data → Kafka
-├── flink_jobs/
+├── stream_jobs/
 │   └── vwap_job.py             # Faust VWAP + risk metrics job
 ├── storage/
 │   └── duckdb_query.py         # DuckDB queries against Parquet
@@ -236,7 +236,7 @@ riskpulse/
 
 ## Background
 
-Built by **Prajwal Tidke** — Senior Data Engineer with 5+ years building production ETL systems at LTIMindtree and TresVista (CPPIB, $550B AUM). Currently completing MS Big Data Analytics at SDSU (4.0 GPA) and researching LLM applications at LINC Lab.
+Built by **Prajwal Tidke** — Senior Data Engineer with 5+ years building production ETL systems at LTIMindtree and TresVista (serving a $550B+ AUM fund-of-funds client). Currently completing MS Big Data Analytics at SDSU (4.0 GPA) and researching LLM applications at LINC Lab.
 
 This project bridges my batch ETL background with modern streaming + AI — the stack I would have built at TresVista if we'd had a real-time layer.
 

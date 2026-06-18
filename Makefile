@@ -1,4 +1,4 @@
-.PHONY: up down logs producers flink simulate query clean jars help
+.PHONY: up down logs producers stream simulate query clean jars help
 
 # ── Infrastructure ────────────────────────────────────────────────────────────
 up:
@@ -12,7 +12,7 @@ up:
 	@echo "   ChromaDB   → http://localhost:8000"
 	@echo "   Schema Reg → http://localhost:8081"
 	@echo ""
-	@echo "   Next: make jars && make simulate && make flink"
+	@echo "   Next: make jars && make simulate && make stream"
 
 down:
 	docker compose down
@@ -33,10 +33,10 @@ alpaca:
 	@echo "Starting Alpaca live producer (requires API keys in .env)..."
 	python producers/alpaca_producer.py
 
-# ── Flink Job ─────────────────────────────────────────────────────────────────
-flink:
-	@echo "Submitting VWAP job to Flink..."
-	python flink_jobs/vwap_job.py
+# ── Stream Job ─────────────────────────────────────────────────────────────────
+stream:
+	@echo "Starting Faust VWAP stream processor..."
+	python stream_jobs/vwap_job.py worker -l info --without-web
 
 # ── DuckDB Query ──────────────────────────────────────────────────────────────
 query:
@@ -63,7 +63,7 @@ help:
 	@echo "  make jars      — download Flink connector JARs (one-time)"
 	@echo "  make simulate  — run portfolio event simulator → Kafka"
 	@echo "  make alpaca    — run live Alpaca tick producer → Kafka"
-	@echo "  make flink     — start Flink VWAP streaming job"
+	@echo "  make stream    — start Faust VWAP streaming job"
 	@echo "  make query     — query risk metrics via DuckDB"
 	@echo "  make dbt-run   — run dbt models"
 	@echo "  make dbt-test  — run dbt schema tests"

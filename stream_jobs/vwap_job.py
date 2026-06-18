@@ -1,5 +1,5 @@
 """
-flink_jobs/vwap_job.py  (powered by Faust — Robinhood's stream processor)
+stream_jobs/vwap_job.py  (powered by Faust — Robinhood's stream processor)
 
 Reads market-ticks from Kafka and computes per 5-minute window:
   - VWAP (volume-weighted average price)
@@ -10,8 +10,8 @@ Writes results to:
   - Parquet files in ./data/risk_metrics/ (queryable by DuckDB)
   - risk-alerts Kafka topic
 
-Run: make flink
-  or: python flink_jobs/vwap_job.py worker -l info
+Run: make stream
+  or: python stream_jobs/vwap_job.py worker -l info
 """
 
 import asyncio

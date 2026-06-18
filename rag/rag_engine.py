@@ -33,7 +33,7 @@ DUCKDB_PATH  = os.getenv("DUCKDB_PATH", "./data/riskpulse.duckdb")
 COLLECTION   = "riskpulse_portfolio"
 
 SYSTEM_PROMPT = """You are RiskPulse, an intelligent portfolio risk assistant.
-You have access to real-time streaming data from a portfolio of 8 stocks:
+You have access to real-time streaming data from 8 equity feeds:
 AAPL, MSFT, NVDA, GOOGL, META, TSLA, SPY, QQQ.
 
 The data is computed from live Kafka streams using 5-minute VWAP windows.

@@ -39,7 +39,7 @@ Message format: JSON with fields `symbol`, `price`, `size`, `timestamp`, `source
 
 ---
 
-### 3. Faust Stream Processor (`flink_jobs/vwap_job.py`)
+### 3. Faust Stream Processor (`stream_jobs/vwap_job.py`)
 
 **Window type:** 5-minute tumbling (non-overlapping)
 
