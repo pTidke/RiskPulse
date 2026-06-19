@@ -206,12 +206,12 @@ dbt run && dbt test
 The DuckDB profile ships in `riskpulse_dbt/profiles.yml` (local only, no secrets). If dbt reports a missing or empty profile, create `~/.dbt/profiles.yml`:
 ```yaml
 # the top key must match the `profile:` line in dbt_project.yml
-riskpulse:
+riskpulse_dbt:
   target: dev
   outputs:
     dev:
       type: duckdb
-      path: 'riskpulse.duckdb'
+      path: '../data/riskpulse.duckdb'
       threads: 4
 ```
 
@@ -236,7 +236,7 @@ python rag/rag_engine.py query "which stocks are the riskiest right now?"
 ```bash
 # If the dashboard reads live data from the FastAPI backend, start it first
 # in its own terminal. ChromaDB holds port 8000, so run the API elsewhere:
-#   uvicorn rag.api:app --port 8001
+#   uvicorn rag.api:app --port 8888
 cd frontend && npm install && npm run dev
 ```
 Use a plain `npm install`, **not** `--force`, to avoid a Rollup native-dependency bug. Dashboard at http://localhost:5173.

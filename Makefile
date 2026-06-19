@@ -1,4 +1,4 @@
-.PHONY: up down logs producers stream simulate query clean jars help
+.PHONY: up down logs producers stream simulate query clean help
 
 # ── Infrastructure ────────────────────────────────────────────────────────────
 up:
@@ -12,17 +12,13 @@ up:
 	@echo "   ChromaDB   → http://localhost:8000"
 	@echo "   Schema Reg → http://localhost:8081"
 	@echo ""
-	@echo "   Next: make jars && make simulate && make stream"
+	@echo "   Next: make simulate && make stream"
 
 down:
 	docker compose down
 
 logs:
 	docker compose logs -f kafka
-
-# ── JAR setup (one-time) ──────────────────────────────────────────────────────
-jars:
-	bash scripts/download_jars.sh
 
 # ── Data Producers ────────────────────────────────────────────────────────────
 simulate:
@@ -60,7 +56,6 @@ clean:
 help:
 	@echo ""
 	@echo "  make up        — start all Docker services"
-	@echo "  make jars      — download Flink connector JARs (one-time)"
 	@echo "  make simulate  — run portfolio event simulator → Kafka"
 	@echo "  make alpaca    — run live Alpaca tick producer → Kafka"
 	@echo "  make stream    — start Faust VWAP streaming job"

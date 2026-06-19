@@ -3,7 +3,7 @@ riskpulse_dbt:
   outputs:
     dev:
       type: duckdb
-      path: 'riskpulse.duckdb'
+      path: '../data/riskpulse.duckdb'
       threads: 4
       extensions:
         - httpfs

@@ -128,5 +128,5 @@ if __name__ == "__main__":
     except Exception as e:
         logger.error(
             f"Query failed: {e}\n"
-            "Is data flowing? Try: make simulate && make flink"
+            "Is data flowing? Try: make simulate && make stream"
         )
