@@ -22,7 +22,8 @@ In traditional financial data infrastructures, legacy ETL pipelines are heavily 
 
 - Live price ticks stream through **Apache Kafka** into a **Faust** stream processor
 - **5-minute VWAP windows** compute volatility regimes, drawdown alerts, and risk rankings per symbol
-- **dbt** builds clean analytics marts with 10 schema tests and full lineage documentation
+- **dbt** builds analytics marts (materialized as tables) with **enforced model contracts** — typed columns plus primary-key / not-null constraints — 10 schema tests, and full lineage docs
+- Marts are mirrored to an **Apache Iceberg** table on MinIO (SQLite catalog) and read back through DuckDB, with a reproducible **Parquet-vs-Iceberg latency benchmark** (`make bench`)
 - A **LangChain RAG layer** (ChromaDB + Azure GPT-4o-mini) answers natural language questions against live mart data
 - Entire stack runs **100% locally for free** — no cloud account required
 
@@ -106,9 +107,9 @@ Recommend monitoring NVDA given its HIGH volatility regime designation.
 | ----------------- | ------------------------ | --------------------------------------- |
 | Messaging         | Apache Kafka             | 3 topics, event-driven architecture     |
 | Stream Processing | Faust Streaming          | Stateful 5-min windowed aggregations    |
-| Storage           | Parquet + Delta Lake     | Date-partitioned lakehouse format       |
+| Storage           | Parquet + Apache Iceberg | Stream lake (Parquet) + Iceberg table on MinIO |
 | Warehouse         | DuckDB                   | Zero-config analytical queries          |
-| Transformation    | dbt-core + dbt-duckdb    | 4 models, 10 schema tests, lineage docs |
+| Transformation    | dbt-core + dbt-duckdb    | 4 models, enforced contracts, 10 tests, lineage |
 | Vector Store      | ChromaDB                 | Semantic search over mart snapshots     |
 | LLM               | Azure OpenAI GPT-4o-mini | Natural language portfolio queries      |
 | Orchestration     | LangChain                | RAG pipeline + prompt engineering       |
@@ -116,6 +117,7 @@ Recommend monitoring NVDA given its HIGH volatility regime designation.
 | Dashboard         | Vite                     | Live risk visualizations (frontend)     |
 | DevOps            | Docker Compose           | Full local stack in one command         |
 | CI/CD             | GitHub Actions           | dbt test gate on every PR               |
+| Benchmark         | DuckDB micro-bench       | Parquet vs Iceberg latency (p50/p95/p99) |
 | Data Source       | Alpaca Markets API       | Free real-time equity tick data         |
 
 ---
@@ -134,7 +136,7 @@ mart_portfolio_summary    mart_volatility_alerts
  volatility regime)        HIGHEST_VOL / WATCH flags)
 ```
 
-**10 schema tests** covering: `not_null`, `unique`, and referential integrity across all 4 models.
+**10 schema tests** (`not_null`, `unique`) plus **enforced dbt contracts** on the marts — typed columns with primary-key / not-null constraints, materialized as tables. Query-latency numbers in [docs/benchmarks.md](docs/benchmarks.md).
 
 ---
 
@@ -221,6 +223,15 @@ dbt docs generate && dbt docs serve --port 8090
 ```
 Port 8090 is used because Kafka UI already holds 8080. Open http://localhost:8090, and stop it with Ctrl+C.
 
+### 7b. (Optional) Benchmark the query layer + build the Iceberg lakehouse
+```bash
+make bench        # DuckDB latency: serving marts + Parquet scans
+make iceberg      # mirror the Parquet lake into an Iceberg table on MinIO
+python scripts/benchmark_duckdb.py --sources parquet,iceberg   # Parquet vs Iceberg
+```
+Needs the stack up (`make up`) and dbt built (step 6). Methodology and results in
+[docs/benchmarks.md](docs/benchmarks.md).
+
 ### 8. Ingest the marts into the RAG layer
 ```bash
 cd .. && python rag/rag_engine.py ingest
@@ -262,7 +273,8 @@ riskpulse/
 ├── stream_jobs/
 │   └── vwap_job.py             # Faust VWAP + risk metrics job
 ├── storage/
-│   └── duckdb_query.py         # DuckDB queries against Parquet
+│   ├── duckdb_query.py         # DuckDB queries against Parquet
+│   └── iceberg_lake.py         # Iceberg mirror: PyIceberg + SQLite catalog → MinIO
 ├── riskpulse_dbt/
 │   ├── dbt_project.yml
 │   ├── profiles.yml            # Local DuckDB profile
@@ -277,6 +289,10 @@ riskpulse/
 │   ├── rag_engine.py           # LangChain + ChromaDB + Azure OpenAI (CLI)
 │   └── api.py                  # FastAPI REST endpoints
 ├── frontend/                   # Vite dashboard (risk visualizations)
+├── scripts/
+│   └── benchmark_duckdb.py     # DuckDB latency benchmark (Parquet vs Iceberg)
+├── docs/
+│   └── benchmarks.md           # benchmark methodology + results
 ├── tests/                      # Pipeline tests
 ├── .github/workflows/          # CI: dbt test gate on every PR
 ├── docker-compose.yml          # Full local stack

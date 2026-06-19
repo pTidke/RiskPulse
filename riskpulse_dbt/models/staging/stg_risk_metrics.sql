@@ -22,4 +22,16 @@ cleaned as (
     from source
 )
 
-select * from cleaned where rn = 1
+select
+    symbol,
+    window_start,
+    window_end,
+    vwap,
+    min_price,
+    max_price,
+    volatility,
+    price_range,
+    trade_count,
+    total_volume
+from cleaned
+where rn = 1

@@ -14,14 +14,13 @@ Run: uvicorn rag.api:app --reload --port 8888
 """
 
 import os
-import duckdb
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from loguru import logger
 
-from rag.rag_engine import ingest, query
+from rag.rag_engine import connect_marts, ingest, query
 
 load_dotenv()
 
@@ -86,8 +85,8 @@ def query_portfolio(req: QueryRequest):
 @app.get("/portfolio")
 def portfolio_summary():
     """Return current portfolio summary directly from DuckDB — no LLM needed."""
+    con = connect_marts()
     try:
-        con = duckdb.connect(DUCKDB_PATH)
         summary = con.execute("SELECT * FROM mart_portfolio_summary").df()
         alerts  = con.execute("SELECT * FROM mart_volatility_alerts").df()
         return {
@@ -96,3 +95,5 @@ def portfolio_summary():
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        con.close()

@@ -1,4 +1,4 @@
-.PHONY: up down logs producers stream simulate query clean help
+.PHONY: up down logs producers stream simulate query bench iceberg clean help
 
 # ── Infrastructure ────────────────────────────────────────────────────────────
 up:
@@ -38,6 +38,14 @@ stream:
 query:
 	python storage/duckdb_query.py
 
+# ── Benchmark ─────────────────────────────────────────────────────────────────
+bench:
+	python scripts/benchmark_duckdb.py
+
+# ── Iceberg ───────────────────────────────────────────────────────────────────
+iceberg:
+	python storage/iceberg_lake.py
+
 # ── dbt ───────────────────────────────────────────────────────────────────────
 dbt-run:
 	cd riskpulse_dbt && dbt run
@@ -60,6 +68,8 @@ help:
 	@echo "  make alpaca    — run live Alpaca tick producer → Kafka"
 	@echo "  make stream    — start Faust VWAP streaming job"
 	@echo "  make query     — query risk metrics via DuckDB"
+	@echo "  make bench     — benchmark DuckDB latency (Parquet vs Iceberg)"
+	@echo "  make iceberg   — refresh the Iceberg table from the Parquet lake"
 	@echo "  make dbt-run   — run dbt models"
 	@echo "  make dbt-test  — run dbt schema tests"
 	@echo "  make down      — stop all services"

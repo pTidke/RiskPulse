@@ -12,7 +12,7 @@ summary as (
         round(max(max_price) - min(min_price), 2) as session_range,
         round(avg(volatility), 6)         as avg_volatility,
         round(max(volatility), 6)         as peak_volatility,
-        sum(trade_count)                  as total_trades,
+        sum(trade_count)::bigint          as total_trades,
         round(sum(total_volume), 0)       as total_volume,
         round(max(drawdown_pct), 2)       as max_drawdown_pct,
         min(window_start)                 as session_start,

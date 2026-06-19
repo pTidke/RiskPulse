@@ -120,6 +120,7 @@ services:
       mc mb --ignore-existing local/riskpulse-delta
       mc mb --ignore-existing local/riskpulse-checkpoints
       mc mb --ignore-existing local/riskpulse-archive
+      mc mb --ignore-existing local/riskpulse-iceberg
       echo '✅ MinIO buckets ready'
       "
 

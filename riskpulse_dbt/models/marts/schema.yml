@@ -2,23 +2,121 @@ version: 2
 
 models:
   - name: fct_vwap_windows
-    description: "Enriched VWAP fact table with session high and drawdown"
+    description: >
+      Enriched VWAP fact table with running session high, drawdown %, and
+      cross-symbol volatility rank. Materialized as a table with an enforced
+      contract so the schema is locked for downstream consumers.
+    config:
+      contract:
+        enforced: true
     columns:
       - name: symbol
-        tests: [not_null]
+        data_type: varchar
+        constraints:
+          - type: not_null
+        data_tests: [not_null]
+      - name: window_start
+        data_type: timestamp
+        constraints:
+          - type: not_null
+      - name: window_end
+        data_type: timestamp
       - name: vwap
-        tests: [not_null]
+        data_type: double
+        constraints:
+          - type: not_null
+        data_tests: [not_null]
+      - name: min_price
+        data_type: double
+      - name: max_price
+        data_type: double
+      - name: volatility
+        data_type: double
+      - name: price_range
+        data_type: double
+      - name: trade_count
+        data_type: bigint
+      - name: total_volume
+        data_type: double
       - name: session_high
-        tests: [not_null]
+        data_type: double
+        constraints:
+          - type: not_null
+        data_tests: [not_null]
+      - name: drawdown_pct
+        data_type: double
+      - name: volatility_rank
+        data_type: bigint
 
   - name: mart_portfolio_summary
-    description: "Per-symbol session rollup with volatility regime"
+    description: >
+      Per-symbol session rollup with volatility regime. Exactly one row per
+      symbol — symbol is the primary key (DB-enforced via the contract).
+    config:
+      contract:
+        enforced: true
     columns:
       - name: symbol
-        tests: [not_null, unique]
+        data_type: varchar
+        constraints:
+          - type: not_null
+          - type: primary_key
+        data_tests: [not_null, unique]
+      - name: total_windows
+        data_type: bigint
+      - name: avg_vwap
+        data_type: double
+      - name: session_low
+        data_type: double
+      - name: session_high
+        data_type: double
+      - name: session_range
+        data_type: double
+      - name: avg_volatility
+        data_type: double
+      - name: peak_volatility
+        data_type: double
+      - name: total_trades
+        data_type: bigint
+      - name: total_volume
+        data_type: double
+      - name: max_drawdown_pct
+        data_type: double
+      - name: session_start
+        data_type: timestamp
+      - name: last_updated
+        data_type: timestamp
+      - name: volatility_regime
+        data_type: varchar
+        constraints:
+          - type: not_null
 
   - name: mart_volatility_alerts
-    description: "Active alerts — drawdown and high volatility flags"
+    description: >
+      Active alerts (drawdown / highest-vol / watch) on the latest window per
+      symbol. Schema locked via an enforced contract.
+    config:
+      contract:
+        enforced: true
     columns:
       - name: symbol
-        tests: [not_null]
+        data_type: varchar
+        constraints:
+          - type: not_null
+        data_tests: [not_null]
+      - name: alert_time
+        data_type: timestamp
+      - name: current_vwap
+        data_type: double
+      - name: session_high
+        data_type: double
+      - name: drawdown_pct
+        data_type: double
+      - name: volatility
+        data_type: double
+      - name: volatility_rank
+        data_type: bigint
+      - name: alert_type
+        data_type: varchar
+        constraints:
+          - type: not_null
